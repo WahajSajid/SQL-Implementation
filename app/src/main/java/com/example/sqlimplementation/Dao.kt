@@ -1,6 +1,7 @@
 package com.example.sqlimplementation
 
 import android.widget.Toast
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
@@ -8,7 +9,7 @@ import androidx.room.Query
 @Dao
 interface Dao {
     @Query("SELECT * FROM students")
-    fun getAll():List<Students>
+    fun getAll(): LiveData<List<Students>>
 
     @Insert
     fun insert(vararg students: Students)

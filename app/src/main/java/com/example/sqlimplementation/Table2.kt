@@ -1,11 +1,14 @@
 package com.example.sqlimplementation
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.Room
@@ -20,6 +23,7 @@ class Table2 : Fragment() {
     private lateinit var db: AppDataBase
     private lateinit var dao: Dao
     private lateinit var recyclerView: RecyclerView
+    @SuppressLint("SuspiciousIndentation")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -42,9 +46,8 @@ class Table2 : Fragment() {
             "Students"
         ).build()
         dao = db.dao()
-
-
-
+        recyclerView = binding.recyclerView
+        recyclerView.layoutManager = LinearLayoutManager(context)
         binding.button.setOnClickListener {
             val data = Students(
                 id = binding.studentId.text.toString().toInt(),
@@ -54,13 +57,19 @@ class Table2 : Fragment() {
             CoroutineScope(Dispatchers.IO).launch {
                 dao.insert(data)
                 }
+
         }
-        recyclerView = binding.recyclerView
-        recyclerView.layoutManager = LinearLayoutManager(context)
-            CoroutineScope(Dispatchers.IO).launch {
-          val getData =  dao.getAll()
-                recyclerView.adapter = Adpater2(getData)
+        CoroutineScope(Dispatchers.IO).launch {
+            val getData : LiveData<List<Students>> =  dao.getAll()
+            withContext(Dispatchers.Main) {
+                getData.observe(viewLifecycleOwner, Observer { students ->
+                    if (students != null && students.isNotEmpty()) {
+                        recyclerView.adapter = Adpater2(students)
+                    }
+                })
+            }
         }
+
 
 
         return binding.root
